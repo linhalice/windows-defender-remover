@@ -1,25 +1,15 @@
-@set defenderremoverver=12.8
-@setlocal DisableDelayedExpansion
 @echo off
-pushd "%CD%"
-CD /D "%~dp0"
 
-:: Bỏ qua phần Menu và đi thẳng đến nhãn :disablemitigations để tự động chọn tùy chọn "S"
-goto disablemitigations
+:: Tắt dịch vụ Windows Defender
+sc stop WinDefend
+sc config WinDefend start=disabled
 
-:--------------------------------------
+:: Tắt dịch vụ bảo vệ theo thời gian thực của Windows Defender
+PowerShell Set-MpPreference -DisableRealtimeMonitoring $true
 
-:disablemitigations
-CLS
-bcdedit /set hypervisorlaunchtype off
+:: Vô hiệu hóa Windows Defender Tamper Protection (nếu có thể)
+reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 0 /f
 
-CLS
-echo Disabling Security Mitigations...
-:: Registry Remove of Windows Defender
-FOR /R %%f IN (Remove_SecurityComp\*.reg) DO PowerRun.exe regedit.exe /s "%%f"
-CLS
-
-:: Loại bỏ phần khởi động lại
-echo Security mitigations have been disabled successfully.
+echo Windows Defender has been temporarily disabled. Please restart your system for complete removal.
 pause
 exit
